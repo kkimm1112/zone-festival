@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  role      Role     @default(ORGANIZER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  events Event[]
+
+  @@map("users")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  // Relations
+  creator User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  booths  Booth[]
+
+  @@map("events")
+}
+
+model Booth {
+  id      String @id @default(cuid())
+  eventId String
+  x       Int
+  y       Int
+  width   Int
+  height  Int
+  name    String
+  color   String @default("#6366f1")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("booths")
+}
+
+enum Role {
+  ORGANIZER
+  VIEWER
+}
